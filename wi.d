@@ -32,6 +32,7 @@ int main(string[] args)
 		puts("wi v1.0.0");
     	puts("MIT License: Copyright (c) 2016-2017 dd86k");
     	puts("Project page: <https://github.com/dd86k/wi>");
+		return 0;
 	}
 
 	version (Windows) const string input = toLower(args[$ - 1]);
