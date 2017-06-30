@@ -1,6 +1,6 @@
-import std.stdio;
+import core.stdc.stdio : puts;
 import core.stdc.stdlib : getenv;
-import std.string : toLower, fromStringz, split;
+import std.string : toLower, fromStringz, toStringz, split;
 import std.file : DirEntry, dirEntries, SpanMode, FileException;
 
 version (Windows) {
@@ -21,10 +21,17 @@ int main(string[] args)
 {
 	if (args.length == 1)
 	{
-		writeln("Search directories in PATH.");
-		writeln("Usage:");
-		writeln("  wi <String>");
+		puts("Search directories in PATH.");
+		puts("Usage:");
+		puts("  wi <String>");
 		return 0;
+	}
+
+	if (args[1] == "--version")
+	{
+		puts("wi v1.0.0");
+    	puts("MIT License: Copyright (c) 2016-2017 dd86k");
+    	puts("Project page: <https://github.com/dd86k/wi>");
 	}
 
 	version (Windows) const string input = toLower(args[$ - 1]);
@@ -36,7 +43,7 @@ int main(string[] args)
 	if (p)
 		paths = cast(immutable)fromStringz(p);
 	else {
-		writeln("There was an error getting PATH.");
+		puts("There was an error getting PATH.");
 		return 1;
 	}
 
@@ -48,11 +55,11 @@ int main(string[] args)
 			{
 				version (Windows) if (input == toLower(getBaseName(file.name)))
 				{
-					writeln(file.name);
+					puts(file.name.toStringz);
 				}
 				version (Posix)   if (input == getBaseName(file.name))
 				{
-					writeln(file.name);
+					puts(file.name.toStringz);
 				}
 			}
 		}
@@ -73,7 +80,7 @@ int main(string[] args)
  *   C:\Cool\ABC.exe -> ABC
  *   /usr/share/e    -> e
  */
-string getBaseName(string path) @nogc @safe
+string getBaseName(string path) @nogc @safe pure
 {
 	size_t i = path.length;
 	const size_t l = i; // total length
