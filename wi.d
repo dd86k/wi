@@ -1,16 +1,10 @@
 import core.stdc.stdio : puts;
 import core.stdc.stdlib : getenv;
-import std.string : toLower, fromStringz, toStringz, split;
-import std.file : DirEntry, dirEntries, SpanMode, FileException;
+import std.string : toLower, fromStringz, toStringz, split, indexOf;
+import std.file : dirEntries, SpanMode, FileException;
 
-version (Windows) {
-	enum DELIM = ';';
-	enum DIRSEP = '\\';
-}
-version (Posix) {
-	enum DELIM = ':';
-	enum DIRSEP = '/';
-}
+version (Windows) enum DELIM = ';', DIRSEP = '\\', VARC = '%';
+version (Posix)   enum DELIM = ':', DIRSEP = '/',  VARC = '$';
 
 /**
  * Entry point.
@@ -23,7 +17,7 @@ int main(string[] args)
 	{
 		puts("Search directories in PATH.");
 		puts("Usage:");
-		puts("  wi <String>");
+		puts("  wi <string>");
 		return 0;
 	}
 
@@ -39,7 +33,7 @@ int main(string[] args)
 	else              const string input = args[$ - 1];
 
 	char* p = getenv("PATH");
-	
+
 	string paths;
 	if (p)
 		paths = cast(immutable)fromStringz(p);
@@ -52,20 +46,36 @@ int main(string[] args)
 	{
 		try
 		{
+			ptrdiff_t i;
+			//TODO: expand os variables
+			debug if ((i = indexOf(path, VARC)) != -1)
+			{
+				version (Windows)
+				{
+
+				}
+				version (Posix)
+				{
+
+				}
+			}
+
 			foreach (file; dirEntries(path, SpanMode.shallow))
 			{
-				version (Windows) if (input == toLower(getBaseName(file.name)))
+				version (Windows)
 				{
-					puts(file.name.toStringz);
+					if (input == toLower(getBaseName(file.name)))
+						puts(file.name.toStringz);
 				}
-				version (Posix)   if (input == getBaseName(file.name))
+				version (Posix)
 				{
-					puts(file.name.toStringz);
+					if (input == getBaseName(file.name))
+						puts(file.name.toStringz);
 				}
 			}
 		}
 		catch (FileException)
-		{ //TODO: Expand variables (getenv)
+		{
 
 		}
 	}
@@ -75,6 +85,7 @@ int main(string[] args)
 
 /**
  * Gets the most basic filename out of a full path.
+ * Theoretically works on linux with extension-less files.
  * Params: path = Path (full or incomplete)
  * Returns: Basic filename without extension.
  * Examples:
@@ -85,10 +96,9 @@ string getBaseName(string path) @nogc @safe pure
 {
 	size_t i = path.length;
 	const size_t l = i; // total length
-	size_t s;
 
 	while (path[--i] != DIRSEP && i >= 0) {}
-	s = ++i;
+	size_t s = ++i;
 	while (path[i++] != '.' && i < l) {}
 
 	return path[s .. i - 1];
